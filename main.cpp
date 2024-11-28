@@ -4,6 +4,7 @@
 #include <random>
 #include <algorithm>
 #include <iomanip>
+#include <fstream>
 #include <numeric> // Para std::accumulate
 
 using namespace std;
@@ -22,18 +23,25 @@ const int limiteSuperior = 255; // Valores de intensidad de píxeles
 const double b = 1.0; // Constante para la espiral
 const double M_PI = 3.14159265358979323846;
 
-// Generar una "imagen" sintética representada como una matriz 2D
-vector<vector<int>> generarImagenSintetica(int filas, int columnas) {
+// Leer la imagen desde un archivo de texto
+vector<vector<int>> leerImagenDesdeArchivo(const string& nombreArchivo, int filas, int columnas) {
     vector<vector<int>> imagen(filas, vector<int>(columnas));
-    random_device rd;
-    mt19937 rng(rd());
-    uniform_int_distribution<int> dist(0, 255);
-
-    for (int i = 0; i < filas; ++i) {
-        for (int j = 0; j < columnas; ++j) {
-            imagen[i][j] = dist(rng);
-        }
+    ifstream archivo(nombreArchivo,ios::in);
+    if (!archivo) {
+        cerr << "Error al abrir el archivo: " << nombreArchivo << endl;
+        exit(1);
     }
+
+    string linea;
+    int fila = 0;
+    while (getline(archivo, linea) && fila < filas) {
+        stringstream ss(linea);
+        for (int col = 0; col < columnas; ++col) {
+            ss >> imagen[fila][col];
+        }
+        ++fila;
+    }
+    archivo.close();
     return imagen;
 }
 
@@ -129,8 +137,9 @@ bool compara(const Ballena& a, const Ballena& b) {
 }
 
 int main() {
-    // Generar una imagen sintética de 100x100
-    vector<vector<int>> img = generarImagenSintetica(100, 100);
+    // Leer la imagen desde el archivo
+    string nombreArchivo = "radiografia.txt";
+    vector<vector<int>> img = leerImagenDesdeArchivo(nombreArchivo, 800, 800);
 
     // Calcular el histograma 1D
     vector<int> hist = calcularHistograma1D(img);
